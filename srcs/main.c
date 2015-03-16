@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/11 16:16:41 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/13 20:27:49 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/16 17:17:00 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,10 @@ void	handle_term(t_env *env)
 {
 	char	*output;
 	int		i;
+	int		x;
+	int		y;
 
-	if (env->argc > env->height || env->col_width > env->width)//((1 + (env->argc / env->height)) * env->col_width > env->width)
+	if ((1 + (env->argc / (env->height - 1))) * (env->col_width + 1) > env->width)
 	{
 		write(tty_fd(), "Increase window size...\n", 24);
 		return ;
@@ -81,16 +83,19 @@ void	handle_term(t_env *env)
 	i = 0;
 	while (i < env->argc)
 	{
+		x = (i / (env->height - 1)) * (env->col_width + 1);
+		y = i % (env->height - 1);
+		ft_strjoinfree(&output, tgoto(tgetstr("cm", NULL), x, y));
 		if (i == env->curr_arg)
 			ft_strjoinfree(&output, tgetstr("us", NULL));
 		if (env->selected[i] == 1)
 			ft_strjoinfree(&output, tgetstr("mr", NULL));
 		ft_strjoinfree(&output, env->argv[i]);
-		ft_strjoinfree(&output, "\n");
+		// ft_strjoinfree(&output, "\n");
 		ft_strjoinfree(&output, tgetstr("me", NULL));
 		i++;
 	}
-	ft_strjoinfree(&output, tgoto(tgetstr("cm", NULL), 0, env->curr_arg));//1 + ((env->curr_arg / env->width) * env->col_width), env->curr_arg % env->width));
+	//ft_strjoinfree(&output, tgoto(tgetstr("cm", NULL), 0, env->curr_arg));//1 + ((env->curr_arg / env->width) * env->col_width), env->curr_arg % env->width));
 	write(tty_fd(), output, ft_strlen(output));
 	free(output);
 }
@@ -110,24 +115,55 @@ void	window_size_update(int signum)
 	(void)signum;
 }
 
-void	do_abort(int signum)
+void	reset_term(t_env *env)
 {
-	t_env	*env;
-
 	write(tty_fd(), tgoto(tgetstr("cm", NULL), 0, 0), ft_strlen(tgoto(tgetstr("cm", NULL), 0, 0)));
 	write(tty_fd(), tgetstr("cd", NULL), 3);
 	write(tty_fd(), tgetstr("ve", NULL), 12);
 	close(tty_fd());
-	env = get_env(NULL);
 	tcsetattr(0, 0, env->old_term);
+}
+
+void	do_abort(int signum)
+{
+	reset_term(get_env(NULL));
 	exit(signum);
+}
+
+void	do_return(t_env *env)
+{
+	int		ret_len;
+	char	str[(ret_len = (env->argc * env->col_width) + env->argc)];
+	char	*temp;
+	int		i;
+
+	ft_bzero(str, ret_len);
+	i = 0;
+	temp = str;
+	while (i < env->argc)
+	{
+		if (env->selected[i] == 1)
+		{
+			ft_strcpy(temp, env->argv[i]);
+			temp += ft_strlen(env->argv[i]);
+			*(temp++) = ' ';
+		}
+		i++;
+	}
+	if (temp == str)
+		temp++;
+	*(temp - 1) = '\n';
+	reset_term(env);
+	ft_putstr(str);
+	exit(0);
 }
 
 void	input_loop(t_env *env)
 {
 	char			input_string[8];
 	unsigned long	inputs;
-	char			str[200];
+	// char			str[200];
+	int				temp;
 
 	write(tty_fd(), tgetstr("vi", NULL), 6);
 	handle_term(env);
@@ -137,8 +173,24 @@ void	input_loop(t_env *env)
 	{
 		inputs = *((unsigned long *)input_string);
 		//DEBUG
-		write(tty_fd(), str, sprintf(str, "(%3d, %3d, %3d, %3d, %3d, %3d)\n%.12lx\n", input_string[0], input_string[1], input_string[2], input_string[3], input_string[4], input_string[5], inputs));
+		// write(tty_fd(), str, sprintf(str, "(%3d, %3d, %3d, %3d, %3d, %3d)\n%.12lx\n", input_string[0], input_string[1], input_string[2], input_string[3], input_string[4], input_string[5], inputs));
 		//DEBUG
+		//If escape, exit
+		if (inputs == FT_SELECT_KEY_ESCAPE)
+			do_abort(SIGQUIT);
+		//If arrow, move selection
+		else if (inputs == FT_SELECT_KEY_UP)
+			env->curr_arg = (env->curr_arg == 0 ? env->argc - 1 : env->curr_arg - 1);
+		else if (inputs == FT_SELECT_KEY_DOWN)
+			env->curr_arg++;
+		//If space, make selected. (+ 1 % 2)
+		else if (temp = env->selected[env->curr_arg], inputs == FT_SELECT_KEY_SPACE)
+			env->selected[env->curr_arg++] = (temp + 1) % 2;
+		//If enter, return
+		else if (inputs == FT_SELECT_KEY_ENTER)
+			do_return(env);
+		//Loop around check
+		env->curr_arg = env->curr_arg % env->argc;
 		handle_term(env);
 		ft_bzero(input_string, 8);
 	}
