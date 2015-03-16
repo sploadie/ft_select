@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/11 16:16:41 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/16 17:17:00 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/16 18:43:36 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,19 @@ int		tty_fd(void)
 	return (fd);
 }
 
+void	clear_terminal(t_env *env, char **str)
+{
+	int	i;
+
+	i = 0;
+	while (i < env->height - 1)
+	{
+		ft_strjoinfree(str, tgoto(tgetstr("cm", NULL), 0, i));
+		ft_strjoinfree(str, tgetstr("ce", NULL));
+		i++;
+	}
+}
+
 void	handle_term(t_env *env)
 {
 	char	*output;
@@ -78,8 +91,10 @@ void	handle_term(t_env *env)
 		write(tty_fd(), "Increase window size...\n", 24);
 		return ;
 	}
+	// output = ft_strdup(tgoto(tgetstr("cm", NULL), 0, 0));
+	// ft_strjoinfree(&output, tgetstr("cd", NULL));
 	output = ft_strdup(tgoto(tgetstr("cm", NULL), 0, 0));
-	ft_strjoinfree(&output, tgetstr("cd", NULL));
+	clear_terminal(env, &output);
 	i = 0;
 	while (i < env->argc)
 	{
@@ -110,15 +125,15 @@ void	window_size_update(int signum)
 	// env->width = 1;
 	env->width = (int)win.ws_col;
 	env->height = (int)win.ws_row;
-	write(tty_fd(), tgetstr("cl", NULL), ft_strlen(tgetstr("cl", NULL)));
+	// write(tty_fd(), tgetstr("cl", NULL), ft_strlen(tgetstr("cl", NULL)));
 	handle_term(env);
 	(void)signum;
 }
 
 void	reset_term(t_env *env)
 {
-	write(tty_fd(), tgoto(tgetstr("cm", NULL), 0, 0), ft_strlen(tgoto(tgetstr("cm", NULL), 0, 0)));
-	write(tty_fd(), tgetstr("cd", NULL), 3);
+	// write(tty_fd(), tgoto(tgetstr("cm", NULL), 0, 0), ft_strlen(tgoto(tgetstr("cm", NULL), 0, 0)));
+	// write(tty_fd(), tgetstr("cd", NULL), 3);
 	write(tty_fd(), tgetstr("ve", NULL), 12);
 	close(tty_fd());
 	tcsetattr(0, 0, env->old_term);
@@ -127,6 +142,7 @@ void	reset_term(t_env *env)
 void	do_abort(int signum)
 {
 	reset_term(get_env(NULL));
+	// perror(NULL);//DEBUG
 	exit(signum);
 }
 
@@ -154,7 +170,7 @@ void	do_return(t_env *env)
 		temp++;
 	*(temp - 1) = '\n';
 	reset_term(env);
-	ft_putstr(str);
+	ft_putstr_fd(str, 1);
 	exit(0);
 }
 
@@ -223,6 +239,8 @@ int		main(int argc, char **argv)
 	//Get window size
 	env.width = tgetnum("co");
 	env.height = tgetnum("li");
+	//SAVE CURSOR:		sc [save current cursor position (P)]
+	//RESTORE CURSOR:	rc [restore cursor to position of last save_cursor]
 	//Get terminal data
 	tcgetattr(0, &env.term);
 	env.term.c_lflag &= ~(ICANON);
