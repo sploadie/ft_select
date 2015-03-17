@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/11 16:16:41 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/17 15:12:03 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/17 16:44:59 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ void	clear_terminal(t_env *env, char **str)
 	int	i;
 
 	i = 0;
-	while (i < env->height - 1)
+	while (i < env->height)
 	{
 		ft_strjoinfree(str, tgoto(tgetstr("cm", NULL), 0, i));
 		ft_strjoinfree(str, tgetstr("ce", NULL));
@@ -176,7 +176,10 @@ void	input_loop(t_env *env)
 	char			input_string[8];
 	unsigned long	inputs;
 	// char			str[200];
-	int				temp;
+	int				width;
+	int				height;
+	int				size;
+	int				extra;
 
 	write(tty_fd(), tgetstr("vi", NULL), 6);
 	handle_term(env);
@@ -191,19 +194,41 @@ void	input_loop(t_env *env)
 		//If escape, exit
 		if (inputs == FT_SELECT_KEY_ESCAPE)
 			do_abort(SIGQUIT);
+		//If space, make selected. (+ 1 % 2)
+		else if (inputs == FT_SELECT_KEY_SPACE && (inputs = FT_SELECT_KEY_DOWN))
+			env->selected[env->curr_arg] = (env->selected[env->curr_arg] + 1) % 2;
 		//If arrow, move selection
 		else if (inputs == FT_SELECT_KEY_UP)
 			env->curr_arg = (env->curr_arg == 0 ? env->argc - 1 : env->curr_arg - 1);
 		else if (inputs == FT_SELECT_KEY_DOWN)
-			env->curr_arg++;
-		//If space, make selected. (+ 1 % 2)
-		else if (temp = env->selected[env->curr_arg], inputs == FT_SELECT_KEY_SPACE)
-			env->selected[env->curr_arg++] = (temp + 1) % 2;
+			env->curr_arg = (env->curr_arg == env->argc - 1 ? 0 : env->curr_arg + 1);
+		else if (inputs == FT_SELECT_KEY_LEFT && (env->height - 1) < env->argc)
+			env->curr_arg -= (env->height - 1);
+		else if (inputs == FT_SELECT_KEY_RIGHT && (env->height - 1) < env->argc)
+			env->curr_arg += (env->height - 1);
 		//If enter, return
 		else if (inputs == FT_SELECT_KEY_ENTER)
 			do_return(env);
 		//Loop around check
-		env->curr_arg = env->curr_arg % env->argc;
+		height = env->height - 1;
+		width = ((env->argc - 1) / height) + 1;
+		size = width * height;
+		extra = env->argc % height;
+		//=
+		if (env->curr_arg < 0)
+		{
+			env->curr_arg += size;
+			if (env->curr_arg > env->argc - 1)
+				env->curr_arg -= height;
+		}
+		//=
+		if (env->curr_arg > env->argc - 1)
+		{
+			env->curr_arg -= size;
+			if (env->curr_arg < 0)
+				env->curr_arg += height;
+		}
+		//Draw terminal
 		handle_term(env);
 		ft_bzero(input_string, 8);
 	}

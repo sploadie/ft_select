@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/02/26 16:57:01 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/16 16:10:12 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/17 15:52:18 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,8 @@
 # define FT_SELECT_KEY_SPACE 0x20
 # define FT_SELECT_KEY_UP 0x415b1b
 # define FT_SELECT_KEY_DOWN 0x425b1b
+# define FT_SELECT_KEY_RIGHT 0x435b1b
+# define FT_SELECT_KEY_LEFT 0x445b1b
 # define FT_SELECT_KEY_ENTER 0xa
 
 typedef struct		s_env
