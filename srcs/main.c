@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/11 16:16:41 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/16 18:43:36 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/17 15:12:03 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,21 +122,18 @@ void	window_size_update(int signum)
 
 	env = get_env(NULL);
 	ioctl(0, TIOCGWINSZ, &win);
-	// env->width = 1;
 	env->width = (int)win.ws_col;
 	env->height = (int)win.ws_row;
-	// write(tty_fd(), tgetstr("cl", NULL), ft_strlen(tgetstr("cl", NULL)));
 	handle_term(env);
 	(void)signum;
 }
 
 void	reset_term(t_env *env)
 {
-	// write(tty_fd(), tgoto(tgetstr("cm", NULL), 0, 0), ft_strlen(tgoto(tgetstr("cm", NULL), 0, 0)));
-	// write(tty_fd(), tgetstr("cd", NULL), 3);
-	write(tty_fd(), tgetstr("ve", NULL), 12);
-	close(tty_fd());
+	ft_putstr_fd(tgetstr("ve", NULL), tty_fd());
+	ft_putstr_fd(tgetstr("te", NULL), tty_fd());
 	tcsetattr(0, 0, env->old_term);
+	close(tty_fd());
 }
 
 void	do_abort(int signum)
@@ -268,10 +265,18 @@ int		main(int argc, char **argv)
 	signal(SIGABRT, &do_abort);
 	signal(SIGUSR1, &do_abort);
 	signal(SIGUSR2, &do_abort);
+	//Clean up terminal
+	// write(tty_fd(), tgetstr("cd", NULL), 3);
+	ft_putstr_fd(tgetstr("ti", NULL), tty_fd());
 	//Start input loop
 	input_loop(&env);
+	// ft_putstr_fd("DEBUG", tty_fd());
+	// sleep(2);
 	//In case of read loop escape
-	close(tty_fd());
+	// ft_putstr_fd(tgetstr("ve", NULL), tty_fd());
+	// ft_putstr_fd(tgetstr("te", NULL), tty_fd());
+	// tcsetattr(0, 0, env.old_term);
+	reset_term(&env);
 	return (0);
 }
 
