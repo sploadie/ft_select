@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/11 16:16:41 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/17 16:44:59 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/18 19:47:06 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,6 +143,13 @@ void	do_abort(int signum)
 	exit(signum);
 }
 
+void	do_stop(int signum)
+{
+	reset_term(get_env(NULL));
+	//Handle useless signum
+	(void)signum;
+}
+
 void	do_return(t_env *env)
 {
 	int		ret_len;
@@ -171,6 +178,24 @@ void	do_return(t_env *env)
 	exit(0);
 }
 
+void	do_delete(t_env *env)
+{
+	int		i;
+
+	if (env->argc == 1)
+		do_abort(0);
+	env->argc--;
+	i = env->curr_arg;
+	while (i < env->argc)
+	{
+		env->argv[i] = env->argv[i + 1];
+		env->selected[i] = env->selected[i + 1];
+		i++;
+	}
+	if (env->curr_arg == env->argc)
+		env->curr_arg--;
+}
+
 void	input_loop(t_env *env)
 {
 	char			input_string[8];
@@ -184,21 +209,22 @@ void	input_loop(t_env *env)
 	write(tty_fd(), tgetstr("vi", NULL), 6);
 	handle_term(env);
 	ft_bzero(input_string, 8);
-	env->put = 0;
 	while ((read(0, input_string, 6)) != 0)
 	{
 		inputs = *((unsigned long *)input_string);
-		//DEBUG
+		// //DEBUG
 		// write(tty_fd(), str, sprintf(str, "(%3d, %3d, %3d, %3d, %3d, %3d)\n%.12lx\n", input_string[0], input_string[1], input_string[2], input_string[3], input_string[4], input_string[5], inputs));
-		//DEBUG
+		// ft_bzero(input_string, 8);
+		// continue ;
+		// //DEBUG
 		//If escape, exit
 		if (inputs == FT_SELECT_KEY_ESCAPE)
-			do_abort(SIGQUIT);
+			do_abort(0);
 		//If space, make selected. (+ 1 % 2)
 		else if (inputs == FT_SELECT_KEY_SPACE && (inputs = FT_SELECT_KEY_DOWN))
 			env->selected[env->curr_arg] = (env->selected[env->curr_arg] + 1) % 2;
 		//If arrow, move selection
-		else if (inputs == FT_SELECT_KEY_UP)
+		if (inputs == FT_SELECT_KEY_UP)
 			env->curr_arg = (env->curr_arg == 0 ? env->argc - 1 : env->curr_arg - 1);
 		else if (inputs == FT_SELECT_KEY_DOWN)
 			env->curr_arg = (env->curr_arg == env->argc - 1 ? 0 : env->curr_arg + 1);
@@ -206,6 +232,9 @@ void	input_loop(t_env *env)
 			env->curr_arg -= (env->height - 1);
 		else if (inputs == FT_SELECT_KEY_RIGHT && (env->height - 1) < env->argc)
 			env->curr_arg += (env->height - 1);
+		//If backspace/delete, delete
+		else if (inputs == FT_SELECT_KEY_BACKSPACE || inputs == FT_SELECT_KEY_DELETE)
+			do_delete(env);
 		//If enter, return
 		else if (inputs == FT_SELECT_KEY_ENTER)
 			do_return(env);
@@ -232,6 +261,53 @@ void	input_loop(t_env *env)
 		handle_term(env);
 		ft_bzero(input_string, 8);
 	}
+}
+
+void	set_signals(void)
+{
+	signal(SIGWINCH, &window_size_update);
+	signal(SIGCONT, &do_startup);
+	// signal(SIGSTOP, &do_stop);
+	// signal(SIGTSTP, &do_stop);
+	signal(SIGINT, &do_abort);
+	signal(SIGINT, &do_abort);
+	signal(SIGHUP, &do_abort);
+	signal(SIGTERM, &do_abort);
+	signal(SIGSEGV, &do_abort);
+	signal(SIGQUIT, &do_abort);
+	signal(SIGFPE, &do_abort);
+	signal(SIGALRM, &do_abort);
+	signal(SIGKILL, &do_abort);
+	signal(SIGABRT, &do_abort);
+	signal(SIGUSR1, &do_abort);
+	signal(SIGUSR2, &do_abort);
+}
+
+void	do_startup(int signum)
+{
+	t_env	*env;
+
+	set_signals();
+	env = get_env(NULL);
+	//Get terminal data
+	tcgetattr(0, &env->term);
+	env->term.c_lflag &= ~(ICANON);
+	env->term.c_lflag &= ~(ECHO);
+	env->term.c_cc[VMIN] = 1;
+	env->term.c_cc[VTIME] = 0;
+	tcgetattr(0, env->old_term);
+	if (tcsetattr(0, TCSADRAIN, &env->term) == -1)
+		throw_error(NULL);
+	//Start separate terminal buffer
+	if (env->ti == 0)
+	{
+		ft_putstr_fd(tgetstr("ti", NULL), tty_fd());
+		env->ti = 1;
+	}
+	//Handle useless signum
+	(void)signum;
+	// //Restart loop
+	// input_loop(env);
 }
 
 int		main(int argc, char **argv)
@@ -263,37 +339,11 @@ int		main(int argc, char **argv)
 	env.height = tgetnum("li");
 	//SAVE CURSOR:		sc [save current cursor position (P)]
 	//RESTORE CURSOR:	rc [restore cursor to position of last save_cursor]
-	//Get terminal data
-	tcgetattr(0, &env.term);
-	env.term.c_lflag &= ~(ICANON);
-	env.term.c_lflag &= ~(ECHO);
-	env.term.c_cc[VMIN] = 1;
-	env.term.c_cc[VTIME] = 0;
-	tcgetattr(0, env.old_term);
-	if (tcsetattr(0, TCSADRAIN, &env.term) == -1)
-		throw_error(NULL);
 	//Save env for global use
 	get_env(&env);
-	//Set signal catchers
-	signal(SIGWINCH, &window_size_update);
-	signal(SIGINT, &do_abort);
-	signal(SIGINT, &do_abort);
-	signal(SIGHUP, &do_abort);
-	signal(SIGTERM, &do_abort);
-	signal(SIGSTOP, &do_abort);
-	signal(SIGCONT, &do_abort);
-	signal(SIGSEGV, &do_abort);
-	signal(SIGQUIT, &do_abort);
-	signal(SIGFPE, &do_abort);
-	signal(SIGALRM, &do_abort);
-	signal(SIGKILL, &do_abort);
-	signal(SIGABRT, &do_abort);
-	signal(SIGUSR1, &do_abort);
-	signal(SIGUSR2, &do_abort);
-	//Clean up terminal
-	// write(tty_fd(), tgetstr("cd", NULL), 3);
-	ft_putstr_fd(tgetstr("ti", NULL), tty_fd());
-	//Start input loop
+	//Program loop startup
+	env.ti = 0;
+	do_startup(0);
 	input_loop(&env);
 	// ft_putstr_fd("DEBUG", tty_fd());
 	// sleep(2);

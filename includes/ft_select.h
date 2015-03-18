@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/02/26 16:57:01 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/17 15:52:18 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/18 19:42:56 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,6 @@
 # include <sys/ioctl.h>
 # include "libft.h"
 
-# define TERM_BUF 4000
-
 # define FT_SELECT_KEY_ESCAPE 0x1b
 # define FT_SELECT_KEY_SPACE 0x20
 # define FT_SELECT_KEY_UP 0x415b1b
@@ -58,6 +56,8 @@
 # define FT_SELECT_KEY_RIGHT 0x435b1b
 # define FT_SELECT_KEY_LEFT 0x445b1b
 # define FT_SELECT_KEY_ENTER 0xa
+# define FT_SELECT_KEY_BACKSPACE 0x7f
+# define FT_SELECT_KEY_DELETE 0x7e335b1b
 
 typedef struct		s_env
 {
@@ -70,9 +70,11 @@ typedef struct		s_env
 	struct termios	*old_term;
 	int				width;
 	int				height;
-	int				put;
 	int				curr_arg;
 	int				col_width;
+	int				ti;
 }					t_env;
+
+void	do_startup(int signum);
 
 #endif
