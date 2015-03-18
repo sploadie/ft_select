@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/18 20:20:24 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/18 20:58:46 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/18 21:00:02 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ static void	do_keys(t_env *env, unsigned long inputs)
 		do_return(env);
 }
 
-void	input_loop(t_env *env)
+void		input_loop(t_env *env)
 {
 	unsigned long	inputs;
 	int				width;
