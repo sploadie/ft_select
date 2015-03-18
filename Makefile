@@ -6,7 +6,7 @@
 #    By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/11/20 16:35:37 by tgauvrit          #+#    #+#              #
-#    Updated: 2015/03/11 17:25:24 by tgauvrit         ###   ########.fr        #
+#    Updated: 2015/03/18 20:28:37 by tgauvrit         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,7 +25,21 @@ HEADER_DIR =	./includes/
 HEADERS =		$(HEADER_DIR)ft_select.h
 
 SRC_DIR =		./srcs/
-SRC_COMPILED =	main.o
+SRC_COMPILED =	main.o \
+				error.o \
+				ft_strjoinfree.o \
+				get_col_width.o \
+				get_env.o \
+				tty_fd.o \
+				clear_terminal.o \
+				handle_term.o \
+				window_size_update.o \
+				reset_term.o \
+				do_abort.o \
+				do_return.o \
+				do_delete.o \
+				input_loop.o \
+				do_startup.o
 
 COMPILED =		$(SRC_COMPILED)
 

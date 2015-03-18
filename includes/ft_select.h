@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/02/26 16:57:01 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/18 19:42:56 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/18 20:32:41 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,5 +76,21 @@ typedef struct		s_env
 }					t_env;
 
 void	do_startup(int signum);
+void	clear_terminal(t_env *env, char **str);
+void	window_size_update(int signum);
+int		tty_fd(void);
+void	reset_term(t_env *env);
+void	input_loop(t_env *env);
+void	handle_term(t_env *env);
+t_env	*get_env(t_env *env);
+int		get_col_width(char **list, int size);
+void	ft_strjoinfree(char **line, char *add);
+void	throw_error(char *str);
+void	print_error(char *str);
+void	do_startup(int signum);
+void	do_return(t_env *env);
+void	do_delete(t_env *env);
+void	do_abort(int signum);
+void	do_stop(int signum);
 
 #endif
