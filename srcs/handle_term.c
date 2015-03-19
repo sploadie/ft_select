@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/18 20:20:24 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/18 20:44:43 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/19 15:58:52 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@ void		handle_term(t_env *env)
 	if ((1 + (env->argc / (env->height - 1)))
 		* (env->col_width + 1) > env->width)
 	{
-		ft_putstr_fd(tgetstr("cl", NULL), tty_fd());
+		ft_putstr_fd(tgoto(tgetstr("cm", NULL), 0, 0), tty_fd());
+		ft_putstr_fd(tgetstr("cd", NULL), tty_fd());
 		write(tty_fd(), "Increase window size...\n", 24);
 		return ;
 	}
