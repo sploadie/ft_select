@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/18 20:20:24 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/18 20:27:05 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/03/19 14:48:11 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void	do_return(t_env *env)
 	}
 	if (temp == str)
 		temp++;
-	*(temp - 1) = '\n';
+	*(temp - 1) = '\0';
 	reset_term(env);
 	ft_putstr_fd(str, 1);
 	exit(0);
