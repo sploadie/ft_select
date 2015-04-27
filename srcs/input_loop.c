@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/18 20:20:24 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/18 21:00:02 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/04/27 17:48:56 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ void		input_loop(t_env *env)
 
 	write(tty_fd(), tgetstr("vi", NULL), 6);
 	handle_term(env);
-	while (inputs = 0, (read(0, &inputs, 6)) != 0)
+	while (inputs = 0, (read(0, &inputs, 6)) > 0)
 	{
 		do_keys(env, inputs);
 		height = env->height - 1;
@@ -62,4 +62,5 @@ void		input_loop(t_env *env)
 		}
 		handle_term(env);
 	}
+	ft_putstr("FUCK");
 }

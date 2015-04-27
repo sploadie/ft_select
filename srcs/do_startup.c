@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/18 20:20:24 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/03/18 20:31:48 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/04/27 18:01:02 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 static void	set_signals(void)
 {
 	signal(SIGWINCH, &window_size_update);
-	signal(SIGCONT, &do_startup);
+	signal(SIGCONT, &do_restart);
+	signal(SIGTSTP, &do_stop);
 	signal(SIGINT, &do_abort);
 	signal(SIGINT, &do_abort);
 	signal(SIGHUP, &do_abort);
@@ -28,6 +29,27 @@ static void	set_signals(void)
 	signal(SIGABRT, &do_abort);
 	signal(SIGUSR1, &do_abort);
 	signal(SIGUSR2, &do_abort);
+}
+
+void		do_restart(int signum)
+{
+	t_env	*env;
+
+	(void)signum;
+	// set_signals();
+	signal(SIGTSTP, &do_stop);
+	signal(SIGCONT, &do_restart);
+	env = get_env(NULL);
+	if ((env->termtype = getenv("TERM")) == NULL)
+		print_error("Specify a terminal with 'setenv TERM'\n");
+	if (tgetent(env->term_buffer, env->termtype) <= 0)
+		throw_error(NULL);
+	window_size_update(0);
+	// do_startup(0);
+	if (tcsetattr(0, TCSADRAIN, &env->term) == -1)
+		throw_error(NULL);
+	// ft_putstr_fd(tgetstr("ti", NULL), tty_fd());
+	input_loop(env);
 }
 
 void		do_startup(int signum)
