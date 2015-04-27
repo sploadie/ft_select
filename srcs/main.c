@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/11 16:16:41 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/04/27 18:30:45 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/04/27 19:22:31 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,5 @@ int		main(int argc, char **argv)
 	env.ti = 0;
 	do_startup(0);
 	input_loop(&env);
-	// reset_term(&env);
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/18 20:20:24 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/04/27 18:27:03 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/04/27 19:22:19 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,17 +36,10 @@ void		do_restart(int signum)
 	t_env	*env;
 
 	(void)signum;
-	// set_signals();
 	signal(SIGTSTP, &do_stop);
 	signal(SIGCONT, &do_restart);
 	env = get_env(NULL);
-	// if ((env->termtype = getenv("TERM")) == NULL)
-	// 	print_error("Specify a terminal with 'setenv TERM'\n");
-	// if (tgetent(env->term_buffer, env->termtype) <= 0)
-	// 	throw_error(NULL);
 	window_size_update(0);
-	// do_startup(0);
-	// ft_putstr_fd(tgetstr("ti", NULL), tty_fd());
 	if (tcsetattr(0, TCSADRAIN, &env->term) == -1)
 		throw_error(NULL);
 	input_loop(env);

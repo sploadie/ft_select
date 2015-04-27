@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/03/18 20:20:24 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/04/27 17:48:56 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/04/27 19:23:08 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,5 +62,4 @@ void		input_loop(t_env *env)
 		}
 		handle_term(env);
 	}
-	ft_putstr("FUCK");
 }
