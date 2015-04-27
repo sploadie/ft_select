@@ -6,7 +6,7 @@
 /*   By: tgauvrit <tgauvrit@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/02/26 16:57:01 by tgauvrit          #+#    #+#             */
-/*   Updated: 2015/04/27 17:08:12 by tgauvrit         ###   ########.fr       */
+/*   Updated: 2015/04/27 18:22:09 by tgauvrit         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ typedef struct		s_env
 
 void				do_startup(int signum);
 void				do_restart(int signum);
+int					tty_fd_get_set(int new);
 void				clear_terminal(t_env *env, char **str);
 void				window_size_update(int signum);
 int					tty_fd(void);
